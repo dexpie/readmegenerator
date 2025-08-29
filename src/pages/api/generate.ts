@@ -12,7 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Try to get an AI-generated summary via internal API route
         let aiSummary: string | undefined = undefined;
         try {
-            const summaryRes = await fetch(`${process.env.BASE_URL || ''}/api/shapesai-summary`, {
+            // Use relative path when running in server environment to avoid needing BASE_URL
+            const base = process.env.BASE_URL || '';
+            const internalUrl = base ? `${base}/api/shapesai-summary` : `/api/shapesai-summary`;
+
+            const summaryRes = await fetch(internalUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 // shapesai-summary expects { repoUrl }
