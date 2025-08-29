@@ -9,27 +9,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         const repoData = await fetchGitHubRepoData(url);
 
-        // Try to get an AI-generated summary if ShapesAI key is configured
+        // Try to get an AI-generated summary via internal API route
         let aiSummary: string | undefined = undefined;
-        const shapesKey = process.env.SHAPESAI_API_KEY;
-        if (shapesKey) {
-            try {
-                const shapesRes = await fetch('https://api.shapes.inc/v1/summary', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${shapesKey}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url }),
-                });
+        try {
+            const summaryRes = await fetch(`${process.env.BASE_URL || ''}/api/shapesai-summary`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // shapesai-summary expects { repoUrl }
+                body: JSON.stringify({ repoUrl: url }),
+            });
 
-                if (shapesRes.ok) {
-                    const data = await shapesRes.json();
-                    aiSummary = data?.summary || data?.text || (typeof data === 'string' ? data : undefined);
-                }
-            } catch (err) {
-                console.warn('ShapesAI summary failed:', err);
+            if (summaryRes.ok) {
+                const data = await summaryRes.json();
+                // shapesai-summary returns { summary: ... }
+                aiSummary = data?.summary?.summary || data?.summary?.text || data?.summary || undefined;
             }
+        } catch (err) {
+            // ignore and fallback to repo metadata
+            console.warn('Internal ShapesAI summary call failed:', err);
         }
 
         // Use AI summary if available, otherwise fallback to repo description
