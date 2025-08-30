@@ -6,6 +6,7 @@ const Home: React.FC = () => {
   const [repoUrl, setRepoUrl] = useState('');
   const [readme, setReadme] = useState('');
   const [loading, setLoading] = useState(false);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
   const debounceRef = useRef<number | null>(null);
 
   const fetchReadme = async (url: string) => {
@@ -23,6 +24,27 @@ const Home: React.FC = () => {
       console.error('Failed to fetch README:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateDescription = async () => {
+    if (!repoUrl) return;
+    setGeneratingDesc(true);
+    try {
+      const res = await fetch(/api/description?url=);
+      const data = await res.json();
+      const desc = data?.description ?? '';
+      if (!desc) {
+        alert('No description generated');
+      } else {
+        // Insert a Project Description section at the top of the README editor
+        const newReadme = # Project Description\n\n\n\n + readme;
+        setReadme(newReadme);
+      }
+    } catch (err) {
+      console.error('Failed to generate description:', err);
+    } finally {
+      setGeneratingDesc(false);
     }
   };
 
@@ -48,11 +70,17 @@ const Home: React.FC = () => {
 
       <div style={{ display: 'flex', gap: 24, marginTop: 24, alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
-          <h3 style={{ marginTop: 0 }}>Editable README</h3>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <h3 style={{ marginTop: 0 }}>Editable README</h3>
+            <button onClick={generateDescription} disabled={generatingDesc || !repoUrl} style={{ marginLeft: 12 }}>
+              {generatingDesc ? 'Generating...' : 'Generate description'}
+            </button>
+          </div>
+
           <textarea
             value={readme}
             onChange={e => setReadme(e.target.value)}
-            placeholder="Generated README or edit here to update preview..."
+            placeholder='Generated README or edit here to update preview...'
             style={{ width: '100%', minHeight: 520, padding: 12, fontSize: 14, fontFamily: 'monospace', borderRadius: 8, border: '1px solid #e6e6e6' }}
           />
         </div>
