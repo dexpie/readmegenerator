@@ -1,6 +1,13 @@
-export function generateReadme(repoData: any): string {
+﻿export function generateReadme(repoData: any): string {
     const { meta, languages, packageJson } = repoData;
-    let readme = `# ${meta.name}\n\n${meta.description || 'A modern web project.'}\n\n`;
+    let readme = `# ${meta.name}\n\n`;
+
+    // Project Description (explicit section to ensure visibility)
+    if (meta.description && String(meta.description).trim()) {
+        readme += `${meta.description}\n\n`;
+    } else {
+        readme += `No project description provided. Consider enabling AI summary or edit this section.\n\n`;
+    }
 
     // Badges
     readme += `![Stars](https://img.shields.io/github/stars/${meta.owner.login}/${meta.name}) `;
