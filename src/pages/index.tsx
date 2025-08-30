@@ -31,14 +31,13 @@ const Home: React.FC = () => {
     if (!repoUrl) return;
     setGeneratingDesc(true);
     try {
-      const res = await fetch(/api/description?url=);
+      const res = await fetch(`/api/description?url=${encodeURIComponent(repoUrl)}`);
       const data = await res.json();
-      const desc = data?.description ?? '';
+      const desc = (data?.description as string) ?? '';
       if (!desc) {
         alert('No description generated');
       } else {
-        // Insert a Project Description section at the top of the README editor
-        const newReadme = # Project Description\n\n\n\n + readme;
+        const newReadme = `# Project Description\n\n${desc}\n\n` + readme;
         setReadme(newReadme);
       }
     } catch (err) {
@@ -80,7 +79,7 @@ const Home: React.FC = () => {
           <textarea
             value={readme}
             onChange={e => setReadme(e.target.value)}
-            placeholder='Generated README or edit here to update preview...'
+            placeholder="Generated README or edit here to update preview..."
             style={{ width: '100%', minHeight: 520, padding: 12, fontSize: 14, fontFamily: 'monospace', borderRadius: 8, border: '1px solid #e6e6e6' }}
           />
         </div>
