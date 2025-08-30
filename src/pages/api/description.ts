@@ -9,17 +9,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    let description: string | undefined;
+    let description = '';
+
     try {
-      description = await getShapesSummary(String(url));
+      const result = await getShapesSummary(String(url));
+      description = typeof result === 'string' ? result : JSON.stringify(result);
     } catch (err: any) {
+      // Log the error but return a safe JSON response so the client never gets HTML errors
       console.warn('ShapesAI summary error:', err?.message || err);
-      return res.status(500).json({ error: 'Failed to generate description' });
+      description = '';
     }
 
-    res.status(200).json({ description: description ?? '' });
+    const markdown = `# Project Description\n\n${description || 'No description available.'}\n\n`;
+    res.status(200).json({ description: description ?? '', markdown });
   } catch (err: any) {
-    console.error('Description API error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Description API unexpected error:', err);
+    res.status(200).json({ description: '', markdown: '# Project Description\n\nNo description available.\n\n', error: 'internal_error' });
   }
 }
