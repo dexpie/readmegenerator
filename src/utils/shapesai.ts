@@ -1,1 +1,57 @@
-﻿// Utility to fetch ShapesAI summary with timeout and in-memory cache\r\n\r\ntype CacheEntry = { data: any; text?: string; expires: number };\r\nconst cache = new Map<string, CacheEntry>();\r\n\r\nexport async function getShapesSummary(repoUrl: string): Promise<string | any> {\r\n  const apiKey = process.env.SHAPESAI_API_KEY;\r\n  if (!apiKey) throw new Error('NO_API_KEY');\r\n\r\n  const cached = cache.get(repoUrl);\r\n  if (cached && cached.expires > Date.now()) {\r\n    return cached.text ?? cached.data;\r\n  }\r\n\r\n  const base = (process.env.SHAPESAI_API_BASE || 'https://api.shapes.inc/v1').replace(/\\/$/, '');\r\n  const endpoint = ${base}/summary;\r\n\r\n  const controller = new AbortController();\r\n  const timeout = setTimeout(() => controller.abort(), 8000);\r\n\r\n  try {\r\n    const response = await fetch(endpoint, {\r\n      method: 'POST',\r\n      headers: {\r\n        'Authorization': Bearer ,\r\n        'Content-Type': 'application/json',\r\n      },\r\n      body: JSON.stringify({ url: repoUrl }),\r\n      signal: controller.signal,\r\n    });\r\n\r\n    clearTimeout(timeout);\r\n\r\n    if (!response.ok) {\r\n      const text = await response.text();\r\n      const err: any = new Error('REMOTE_ERROR');\r\n      err.status = response.status;\r\n      err.text = text;\r\n      throw err;\r\n    }\r\n\r\n    const data = await response.json();\r\n    const summaryText = data?.summary?.summary || data?.summary?.text || data?.summary || (typeof data === 'string' ? data : undefined);\r\n\r\n    // Cache parsed text (or raw data) for 5 minutes\r\n    cache.set(repoUrl, { data, text: summaryText, expires: Date.now() + 5 * 60 * 1000 });\r\n\r\n    return summaryText ?? data;\r\n  } catch (err: any) {\r\n    clearTimeout(timeout);\r\n    if (err?.name === 'AbortError') {\r\n      const e = new Error('TIMEOUT');\r\n      throw e;\r\n    }\r\n    throw err;\r\n  }\r\n}\r\n
+﻿// Utility to fetch ShapesAI summary with timeout and in-memory cache
+
+type CacheEntry = { data: any; text?: string; expires: number };
+const cache = new Map<string, CacheEntry>();
+
+export async function getShapesSummary(repoUrl: string): Promise<string | any> {
+  const apiKey = process.env.SHAPESAI_API_KEY;
+  if (!apiKey) throw new Error('NO_API_KEY');
+
+  const cached = cache.get(repoUrl);
+  if (cached && cached.expires > Date.now()) {
+    return cached.text ?? cached.data;
+  }
+
+  const base = (process.env.SHAPESAI_API_BASE || 'https://api.shapes.inc/v1').replace(/\/$/, '');
+  const endpoint = `${base}/summary`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: repoUrl }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      const text = await response.text();
+      const err: any = new Error('REMOTE_ERROR');
+      err.status = response.status;
+      err.text = text;
+      throw err;
+    }
+
+    const data = await response.json();
+    const summaryText = data?.summary?.summary || data?.summary?.text || data?.summary || (typeof data === 'string' ? data : undefined);
+
+    // Cache parsed text (or raw data) for 5 minutes
+    cache.set(repoUrl, { data, text: summaryText, expires: Date.now() + 5 * 60 * 1000 });
+
+    return summaryText ?? data;
+  } catch (err: any) {
+    clearTimeout(timeout);
+    if (err?.name === 'AbortError') {
+      const e = new Error('TIMEOUT');
+      throw e;
+    }
+    throw err;
+  }
+}
