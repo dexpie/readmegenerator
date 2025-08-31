@@ -3,11 +3,11 @@ import React from 'react';
 interface Props {
     value: string;
     onChange: (val: string) => void;
-    onGenerate: () => void;
-    loading: boolean;
+    onGenerate?: () => void;
+    loading?: boolean;
 }
 
-const UrlInput: React.FC<Props> = ({ value, onChange, onGenerate, loading }) => (
+const UrlInput: React.FC<Props> = ({ value, onChange, onGenerate, loading = false }) => (
     <div style={{ marginBottom: 24 }}>
         <input
             type="text"
@@ -16,9 +16,11 @@ const UrlInput: React.FC<Props> = ({ value, onChange, onGenerate, loading }) => 
             onChange={e => onChange(e.target.value)}
             style={{ width: '80%', padding: 8, fontSize: 16 }}
         />
-        <button onClick={onGenerate} disabled={loading || !value} style={{ marginLeft: 8, padding: '8px 16px' }}>
-            {loading ? 'Generating...' : 'Generate README'}
-        </button>
+        {onGenerate ? (
+            <button onClick={onGenerate} disabled={loading || !value} style={{ marginLeft: 8, padding: '8px 16px' }}>
+                {loading ? 'Generating...' : 'Generate README'}
+            </button>
+        ) : null}
     </div>
 );
 
