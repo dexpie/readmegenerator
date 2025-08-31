@@ -1,18 +1,19 @@
-
 # readmegenerator
 
-> This is A Readme Generator
+Deskripsi
+
+`readmegenerator` is a tool to automatically generate README files from your project’s source code, git history, and other metadata. It creates comprehensive documentation, including sections for description, installation, usage, contribution, and license, and supports customizable templates for various programming languages.
 
 ![Stars](https://img.shields.io/github/stars/dexpie/readmegenerator) ![Forks](https://img.shields.io/github/forks/dexpie/readmegenerator)
 
 ## 🚀 Features
-- React-based UI
-- Fast development
-- Hot reload
+- Fast and responsive
+- Easy to customize
+- Modern tech stack
 
 ## 📦 Installation
 ```bash
-npm install
+npm install readmegenerator
 ```
 
 ## 🏃 Usage
@@ -20,14 +21,12 @@ npm install
 npm start
 ```
 
-## 🛠️ Tech Stack
-- React
-- JavaScript/TypeScript
+## 🛠️ Languages & Tech
+- TypeScript
 
 ## 🤝 Contributing
 Contributions, issues and feature requests are welcome!
-
-## 📄 License
+Feel free to check [issues page](https://github.com/dexpie/readmegenerator/issues).
 
 
 ---
